@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    添加员工
+    <br><br>
+    <form id="add-form">
+        ID：<input type="text" name="empNo">
+        <br><br>
+        姓名：<input type="text" name="empName">
+        <br><br>
+        生日:<input type="date" name="empBirth" id="getBirth">
+        <br><br>
+        年龄：<input type="text" readonly name="empAge" id="getAge">
+        <br><br>
+        入职时间:<input type="date" name="inductionTime" id="inductionDate">
+        <br><br>
+        电话：<input type="text" name="empTel">
+        <br><br>
+    </form>
+    <select id="empStatus">
+        <option value="1">正常</option>
+        <option value="2">离职</option>
+    </select>
+    <br><br>
+    <input type="button" onclick="add()" value="添加" id="addEmpBtn">
+    <a href="emp-list.html"><input type="button" value="返回" id="addEmpBtn"></a>
+</body>
+<script src="js/jquery-3.6.0.min.js"></script>
+<script>
+    var insertEmpURL = "http://localhost:8080/emp/insertEmp";           // 添加员工URL
+
+    // 格式化时间函数
+    function timeStamp2String(time){
+        var datetime = new Date();
+        datetime.setTime(time);
+        var year = datetime.getFullYear();
+        var month = datetime.getMonth() + 1 < 10 ? "0" + (datetime.getMonth() + 1) : datetime.getMonth() + 1;
+        var date = datetime.getDate() < 10 ? "0" + datetime.getDate() : datetime.getDate();
+        return year + "-" + month + "-" + date;
+    }
+
+    // function getEmpAge(){
+    //     // 获取生日
+    //     var empBirth = $("#getBirth").val();
+    //     // 获取生日毫秒数
+    //     var empBirthTime = new Date(empBirth).getTime();
+    //     // 获取当前时间毫秒数
+    //     var nowDate = new Date().getTime();
+    //     // 计算年龄
+    //     var empAge = Math.ceil((nowDate-empBirthTime) / 1000 / 60 / 60 / 24 /365);
+    //     if(isNaN(empAge)){
+    //         empAge = '';
+    //     }
+    //     $("#getAge").val(empAge);
+    // }
+
+    var empData;
+
+    // 对生日绑定失去焦点事件，失去焦点即计算员工年龄
+    $("#getBirth").blur(function(){
+        // 获取生日
+        var empBirth = $("#getBirth").val();
+        if(empBirth == ''){
+            $("#getBirth").val("1970-01-01");
+            empBirth = $("#getBirth").val();
+        }
+        // 获取生日毫秒数
+        var empBirthTime = new Date(empBirth).getTime();
+        // 获取当前时间毫秒数
+        var nowDate = new Date().getTime();
+        // 计算年龄
+        var empAge = Math.ceil((nowDate-empBirthTime) / 1000 / 60 / 60 / 24 /365);
+        if(isNaN(empAge)){
+            empAge = '';
+        }
+        $("#getAge").val(empAge);
+    });
+
+    // 添加员工函数
+    function add(){
+        // 计算入职时间
+        var inductionDate = $("#inductionDate");
+        if(inductionDate.val() == '') {
+            inductionDate.val(timeStamp2String(new Date().getTime()));
+        }
+        // 处理提交时生日为空
+        var empBirth = $("#getBirth").val();
+        if(empBirth == ''){
+            $("#getBirth").val("1970-01-01");
+            empBirth = $("#getBirth").val();
+        }
+        empData = $("#add-form").serialize();
+        var empStatus = $("#empStatus").val();
+        empData = empData + "&empStatus" +empStatus;
+        console.log(empData);
+
+        $.ajax({
+            type:"GET",
+            url:insertEmpURL,
+            data:empData,
+            success:function(result){
+                if(result.resultCode == 1){
+                    alert("添加成功");
+                }else{
+                    alert("添加失败");
+                }
+            }
+        });
+    }
+
+</script>
+</html>

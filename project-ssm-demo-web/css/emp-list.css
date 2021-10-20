@@ -1,0 +1,16 @@
+#empListTable,#projectListTable{
+    border: 1px solid red;
+}
+
+td{
+    border: 1px solid black;
+    width: 200px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+}
+
+#empList{
+    border: 1px solid red;
+    width: 400px;
+}

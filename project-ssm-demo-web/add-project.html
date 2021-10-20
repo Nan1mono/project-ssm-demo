@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    添加项目
+    <form id="add-form">
+        项目名：<input type="text" value="xm1" name="projName">
+        <br><br>
+        版本号：<input type="text" value="1.0" name="projVersion">
+        <br><br>
+        项目简介:
+        <br>
+        <textarea cols="50" rows="20" style="resize: none;" id="projDesc">123123</textarea>
+        <br><br>
+        创建时间：
+        <input type="date" name="projCreated" id="getProjTime">
+    </form>
+    <br><br>
+    <select id="projStatus">
+        <option value="1">正常</option>
+        <option value="2">暂停</option>
+        <option value="3">结束</option>
+    </select>
+    <br><br>
+    <input type="button" onclick="add()" value="添加">
+    <a href="project-list.html"><input type="button" value="返回"></a>
+</body>
+<script src="js/jquery-3.6.0.min.js"></script>
+<script>
+    var insertProjectURL = "http://localhost:8080/project/insertProject";
+    // 格式化时间函数
+    function timeStamp2String(time) {
+        var datetime = new Date();
+        datetime.setTime(time);
+        var year = datetime.getFullYear();
+        var month = datetime.getMonth() + 1 < 10 ? "0" + (datetime.getMonth() + 1) : datetime.getMonth() + 1;
+        var date = datetime.getDate() < 10 ? "0" + datetime.getDate() : datetime.getDate();
+        return year + "-" + month + "-" + date;
+    }
+
+    function add() {
+        var projTime = $("#getProjTime");
+        if (projTime.val() == '') {
+            projTime.val(timeStamp2String(new Date().getTime()));
+        }
+        var projectData;
+        projectData = $("#add-form").serialize();
+        var projDesc = $("#projDesc").val();
+        projectData = projectData + "&projDesc=" + projDesc;
+        console.log(projectData);
+
+        $.ajax({
+            type: "GET",
+            url: insertProjectURL,
+            data: projectData,
+            success: function (result) {
+                if (result.resultCode == 1) {
+                    alert("添加成功");
+                } else {
+                    alert("添加失败");
+                }
+            }
+        });
+    }
+</script>
+
+</html>

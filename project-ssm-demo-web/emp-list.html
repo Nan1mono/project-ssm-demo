@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/emp-list.css">
+</head>
+
+<body>
+    <table id="empListTable">
+        <tr>
+            <td>95279527</td>
+            <td>李嘉程</td>
+            <td>21</td>
+            <td>2000-02-29</td>
+            <td>2021-10-18</td>
+            <td>12312312323</td>
+            <td>正常</td>
+            <td>编辑/删除</td>
+        </tr>
+    </table>
+    <p><a onclick="previous()" href="javascript:void(0)">上一页</a>&nbsp;/&nbsp;当前:第<span
+            id="nowPage">1</span>页&nbsp;/&nbsp;总计<span id="pageSum">1</span>页&nbsp;/&nbsp;&nbsp;<a onclick="next()"
+            href="javascript:void(0)">下一页</a>&nbsp;/&nbsp;<a href="main.html">首页</a>&nbsp;/&nbsp;<a
+            href="add-emp.html">添加员工</a></p>
+</body>
+<script src="js/jquery-3.6.0.min.js"></script>
+<script>
+    var empListUrl = "http://localhost:8080/emp/listEmpsByPage"; // 分页查询
+    var countEmpUrl = "http://localhost:8080/emp/countEmp"; // 查询员工总数
+    var deleteEmpURL = "http://localhost:8080/emp/deleteEmpByEmpNo"; // 删除员工
+
+    var pageNum = 1;
+    var size = 5;
+    var maxPage;
+    // 设定当前页数
+    $("#nowPage").html(pageNum);
+    // 拿到总数
+    $.get(
+        countEmpUrl,
+        function (result) {
+            maxPage = Math.ceil(result.data / size);
+            // 设定总页数
+            $("#pageSum").html(maxPage);
+        }
+    );
+
+    // 翻页
+    $.ajax({
+        type: "GET",
+        url: empListUrl,
+        data: {
+            pageNum: pageNum,
+            size: size
+        },
+        success: function (res) {
+            if (res.resultCode = 1) {
+                var empListTable = $("#empListTable");
+                empListTable.html('');
+                var status;
+                for (let i = 0; i < res.data.length; i++) {
+                    switch (res.data[i].empStatus) {
+                        case 1:
+                            status = "正常";
+                            break;
+                        case 2:
+                            status = "离职";
+                            break;
+                    }
+                    empListTable.append("<tr><td>" + res.data[i].empNo + "</td><td>" + res.data[i].empName +
+                        "</td><td>" + res.data[i].empAge + "</td><td>" + res.data[i].empBirth +
+                        "</td><td>" + res.data[i].inductionTime + "</td><td>" + res.data[i].empTel +
+                        "</td><td>" + status + "</td><td>编辑/<a onclick=deleteEmp(" + res.data[i].empNo +
+                        ") href='javascript:void(0)'>删除</a></td></tr>");
+                }
+            }
+        }
+    });
+
+
+    function previous() {
+        if (pageNum == 1) {
+            return;
+        } else {
+            pageNum = pageNum - 1;
+            $.ajax({
+                type: "GET",
+                url: empListUrl,
+                data: {
+                    pageNum: pageNum,
+                    size: size
+                },
+                success: function (res) {
+                    if (res.resultCode = 1) {
+                        var empListTable = $("#empListTable");
+                        empListTable.html('');
+                        var status;
+                        for (let i = 0; i < res.data.length; i++) {
+                            switch (res.data[i].empStatus) {
+                                case 1:
+                                    status = "正常";
+                                    break;
+                                case 2:
+                                    status = "离职";
+                                    break;
+                            }
+                            empListTable.append("<tr><td>" + res.data[i].empNo + "</td><td>" + res.data[i]
+                                .empName + "</td><td>" + res.data[i].empAge + "</td><td>" + res.data[i]
+                                .empBirth + "</td><td>" + res.data[i].inductionTime + "</td><td>" + res
+                                .data[i].empTel + "</td><td>" + status +
+                                "</td><td>编辑/<a onclick=deleteEmp(" + res.data[i].empNo +
+                                ") href='javascript:void(0)'>删除</a></td></tr>");
+                        }
+                        // 重新设定当前页数
+                        $("#nowPage").html(pageNum);
+                    }
+                }
+            });
+        }
+    }
+
+    function next() {
+        if (pageNum == maxPage) {
+            return;
+        } else {
+            pageNum = pageNum + 1;
+            $.ajax({
+                type: "GET",
+                url: empListUrl,
+                data: {
+                    pageNum: pageNum,
+                    size: size
+                },
+                success: function (res) {
+                    if (res.resultCode = 1) {
+                        var empListTable = $("#empListTable");
+                        empListTable.html('');
+                        var status;
+                        for (let i = 0; i < res.data.length; i++) {
+                            switch (res.data[i].empStatus) {
+                                case 1:
+                                    status = "正常";
+                                    break;
+                                case 2:
+                                    status = "离职";
+                                    break;
+                            }
+                            empListTable.append("<tr><td>" + res.data[i].empNo + "</td><td>" + res.data[i]
+                                .empName + "</td><td>" + res.data[i].empAge + "</td><td>" + res.data[i]
+                                .empBirth + "</td><td>" + res.data[i].inductionTime + "</td><td>" + res
+                                .data[i].empTel + "</td><td>" + status +
+                                "</td><td>编辑/<a onclick=deleteEmp(" + res.data[i].empNo +
+                                ") href='javascript:void(0)'>删除</a></td></tr>");
+                        }
+                        // 重新设定当前页数
+                        $("#nowPage").html(pageNum);
+                    }
+                }
+            });
+        }
+    }
+
+    function deleteEmp(empNo) {
+        $.ajax({
+            type: "GET",
+            url: deleteEmpURL,
+            data: {
+                empNo: empNo
+            },
+            success: function (result) {
+                if (result.resultCode == 1) {
+                    alert("删除成功");
+                    window.location.reload();
+                } else {
+                    alert("删除失败");
+                    window.location.reload();
+                }
+            }
+        });
+    }
+</script>
+
+</html>

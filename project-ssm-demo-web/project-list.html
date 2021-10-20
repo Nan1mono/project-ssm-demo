@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/emp-list.css">
+</head>
+
+<body>
+    <table id="projectListTable">
+        <tr>
+            <td>1</td>
+            <td>调查问卷系统</td>
+            <td>v1.0</td>
+            <td>快速生成调查问卷</td>
+            <td>2021-10-18</td>
+            <td>正常</td>
+            <td>查看/编辑/删除</td>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>调查问卷系统</td>
+            <td>v1.0</td>
+            <td>快速生成调查问卷</td>
+            <td>2021-10-18</td>
+            <td>正常</td>
+            <td>查看/编辑/删除</td>
+        </tr>
+    </table>
+    <p><a onclick="previous()" href="javascript:void(0)">上一页</a>&nbsp;/&nbsp;当前:第<span
+            id="nowPage">1</span>页&nbsp;/&nbsp;总计<span id="pageSum">1</span>页&nbsp;/&nbsp;&nbsp;<a onclick="next()"
+            href="javascript:void(0)">下一页</a>&nbsp;/&nbsp;<a href="main.html">首页</a>&nbsp;/&nbsp;<a
+            href="add-project.html">添加项目</a></p>
+</body>
+<script src="js/jquery-3.6.0.min.js"></script>
+<script>
+    var projectListURL = "http://localhost:8080/project/listProjectsByPage";                // 分页查询项目
+    var countProjectURL = "http://localhost:8080/project/countProject";                     // 查询项目总数
+    var deleteProjectURL = "http://localhost:8080/project/deleteProjectByProjId";           // 删除项目
+
+    var pageNum = 1;
+    var size = 5;
+    var maxPage;
+    // 获取项目总数
+    $.get(
+        countProjectURL,
+        function (result) {
+            maxPage = Math.ceil(result.data / size);
+            // 设定总页数
+            $("#pageSum").html(maxPage);
+        }
+    );
+    // 设定当前页数
+    $("#nowPage").html(pageNum);
+    // 首页显示
+    $.ajax({
+        type: "GET",
+        url: projectListURL,
+        data: {
+            pageNum: pageNum,
+            size: size
+        },
+        success: function (res) {
+            if (res.resultCode = 1) {
+                var projectListTable = $("#projectListTable");
+                projectListTable.html('');
+                var status;
+                var desc;
+                for (let i = 0; i < res.data.length; i++) {
+                    switch (res.data[i].projStatus) {
+                        case 1:
+                            status = "正常";
+                            break;
+                        case 2:
+                            status = "暂停";
+                            break;
+                        case 3:
+                            status = "结束";
+                            break;
+                    }
+                    if (res.data[i].projDesc.length > 7) {
+                        desc = res.data[i].projDesc.substring(0, 8) + "...";
+                    }
+                    projectListTable.append("<tr><td>" + res.data[i].projId + "</td><td>" + res.data[i]
+                        .projName + "</td><td>" + res.data[i].projVersion + "</td><td>" + desc +
+                        "</td><td>2021-10-18</td><td>" + status +
+                        "</td><td><a href='project-details.html?projId=" + res.data[i].projId +
+                        "'>编辑</a>/<a onclick='deleteProject(" + res.data[i].projId +
+                        ")' href='javascript:void(0)'>删除</a></td></tr>");
+                }
+            }
+        }
+    });
+
+    // 上一页
+    function previous() {
+        if (pageNum == 1) {
+            return;
+        } else {
+            pageNum = pageNum - 1;
+            $.ajax({
+                type: "GET",
+                url: projectListURL,
+                data: {
+                    pageNum: pageNum,
+                    size: size
+                },
+                success: function (res) {
+                    if (res.resultCode = 1) {
+                        var projectListTable = $("#projectListTable");
+                        projectListTable.html('');
+                        var status;
+                        var desc;
+                        for (let i = 0; i < res.data.length; i++) {
+                            switch (res.data[i].projStatus) {
+                                case 1:
+                                    status = "正常";
+                                    break;
+                                case 2:
+                                    status = "暂停";
+                                    break;
+                                case 3:
+                                    status = "结束";
+                                    break;
+                            }
+                            if (res.data[i].projDesc.length > 7) {
+                                desc = res.data[i].projDesc.substring(0, 8) + "...";
+                            }
+                            projectListTable.append("<tr><td>" + res.data[i].projId + "</td><td>" + res
+                                .data[i]
+                                .projName + "</td><td>" + res.data[i].projVersion + "</td><td>" + desc +
+                                "</td><td>2021-10-18</td><td>" + status +
+                                "</td><td>/<a href='project-details.html?projId=" + res.data[i]
+                                .projId +
+                                "'>编辑</a>/<a onclick='deleteProject(" + res.data[i].projId +
+                                ")' href='javascript:void(0)'>删除</a></td></tr>");
+                        }
+                    }
+                    // 重新设定当前页数
+                    $("#nowPage").html(pageNum);
+                }
+            });
+        }
+    }
+
+    // 下一页
+    function next() {
+        if (pageNum == maxPage) {
+            return;
+        } else {
+            pageNum = pageNum + 1;
+            $.ajax({
+                type: "GET",
+                url: projectListURL,
+                data: {
+                    pageNum: pageNum,
+                    size: size
+                },
+                success: function (res) {
+                    if (res.resultCode = 1) {
+                        var projectListTable = $("#projectListTable");
+                        projectListTable.html('');
+                        var status;
+                        var desc;
+                        for (let i = 0; i < res.data.length; i++) {
+                            switch (res.data[i].projStatus) {
+                                case 1:
+                                    status = "正常";
+                                    break;
+                                case 2:
+                                    status = "暂停";
+                                    break;
+                                case 3:
+                                    status = "结束";
+                                    break;
+                            }
+                            if (res.data[i].projDesc.length > 7) {
+                                desc = res.data[i].projDesc.substring(0, 8) + "...";
+                            }
+                            projectListTable.append("<tr><td>" + res.data[i].projId + "</td><td>" + res
+                                .data[i]
+                                .projName + "</td><td>" + res.data[i].projVersion + "</td><td>" + desc +
+                                "</td><td>2021-10-18</td><td>" + status +
+                                "</td><td>/<a href='project-details.html?projId=" + res.data[i]
+                                .projId +
+                                "'>编辑</a>/<a onclick='deleteProject(" + res.data[i].projId +
+                                ")' href='javascript:void(0)'>删除</a></td></tr>");
+                        }
+                    }
+                    // 重新设定当前页数
+                    $("#nowPage").html(pageNum);
+                }
+            });
+        }
+    }
+
+    function deleteProject(projId){
+        console.log(projId);
+        $.ajax({
+            type:"GET",
+            url:deleteProjectURL,
+            data:{projId:projId},
+            success:function(result){
+                if(result.resultCode == 1){
+                    alert("删除成功");
+                }else{
+                    alert("删除失败");
+                }
+                window.location.reload();
+            }
+        });
+    }
+</script>
+
+</html>

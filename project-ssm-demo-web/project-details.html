@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/emp-list.css">
+</head>
+<body>
+    <form action="">
+        <input type="text" value="这里是项目名" id="projName">
+        <br><br>
+        <input type="text" value="这里是项目版本" id="projVersion">
+        <br><br>
+        <textarea cols="50" rows="10" style="resize: none;" id="projDesc"></textarea>
+        <br><br>
+        <select id="projStatus">
+            <option value="1">正常</option>
+            <option value="2">暂停</option>
+            <option value="3">结束</option>
+        </select>
+        <br><br>
+        <div id="empList">
+            <p><input type='checkbox' value='empNo'><span>编号:xxx</span>&nbsp;<span>姓名:xxx</span></p>
+        </div>
+    </form>
+    <br><br>
+    <input type="button" id="commit" onclick="updateProject()" value="提交">
+    <a href="project-list.html"><input type="button" id="commit" value="返回"></a>
+</body>
+<script src="js/jquery-3.6.0.min.js"></script>
+<script>
+    var getProjectURL = "http://localhost:8080/project/getProjectByProjId";             // 根据项目id查询项目
+    var listEmpsURL = "http://localhost:8080/emp/listEmpsByProjId";                     // 根据项目id查询员工
+    var allEmpsURL = "http://localhost:8080/emp/listEmps";                             // 查询所有员工
+    var updateProjectURL = "http://localhost:8080/project/updateProject";               // 更新项目的所有信息
+    var deleteEmpForProjectURL = "http://localhost:8080/project/deleteEmpForProject";   // 删除项目相关成员
+
+    var thisURL = (window.location.href);
+    var projId = thisURL.substring(thisURL.indexOf("=")+1);
+
+    var thisProjectEmps;
+
+    // 查找项目
+    $.ajax({
+        type:"GET",
+        url:getProjectURL,
+        data:{projId:projId},
+        async:false,
+        success:function(result){
+            if(result.resultCode == 1){
+                $("#projName").val(result.data.projName);
+                $("#projVersion").val(result.data.projVersion);
+                $("#projDesc").val(result.data.projDesc);
+                $("#projStatus option[value='"+result.data.projStatus+"']").attr("selected",true);
+            }
+        }
+    });
+
+
+    // 查找参加项目的员工
+    $.ajax({
+        type:"GET",
+        url:listEmpsURL,
+        async:false,
+        data:{projId:projId},
+        success:function(result){
+            thisProjectEmps=result.data;
+        }
+    });
+
+
+    // 查找所有员工的数据
+    $.ajax({
+        type:"GET",
+        url:allEmpsURL,
+        async:false,
+        success:function(result){
+            var empList = $("#empList");
+            empList.html('');
+            for(let i=0;i<result.data.length;i++){
+                var checked = undefined;
+                for(let j=0;j<thisProjectEmps.length;j++){
+                    if(result.data[i].empNo == thisProjectEmps[j].empNo){
+                        checked = "checked";
+                    }
+                }
+                empList.append("<p><input type='checkbox' name='empNo' "+checked+" value='"+result.data[i].empNo+"'><span>编号:"+result.data[i].empNo+"</span>&nbsp;<span>姓名:"+result.data[i].empName+"</span></p>");
+            }
+        }
+    });
+
+    // 更新项目信息
+    function updateProject(){
+        // 获取选中的复选框
+        var checkboxVal = new Array();
+        var checkbox = $("input[type='checkbox']:checked");
+        for(let i=0;i<checkbox.length;i++){
+            checkboxVal[i]=$(checkbox[i]).val();
+            console.log(checkboxVal[i]);
+        }
+        console.log(checkboxVal);
+        // 获取文本域的值
+        var projDesc = $("#projDesc").val();
+        var projName = $("#projName").val();
+        var projVersion = $("#projVersion").val();
+        var projStatus = $("#projStatus").val();
+        console.log(projId);
+        console.log(projDesc);
+        console.log(projName);
+        console.log(projVersion);
+        console.log(projStatus);
+
+        // 获取未选中的文本框
+        var unCheckbox = $("input:checkbox").not("input:checked");
+        var unCheckboxVal = new Array();
+        for(let i=0;i<unCheckbox.length;i++){
+            unCheckboxVal[i]=$(unCheckbox[i]).val();
+            console.log(unCheckboxVal[i]);
+        }
+
+        var projMsg = "projId="+projId+"&projName="+projName+"&projVersion="+projVersion+"&projDesc="+projDesc+"&projStatus="+projStatus;
+        for(let i=0;i<checkboxVal.length;i++){
+            projMsg = projMsg + "&empNo="+checkboxVal[i];
+        }
+        // 更新项目
+        $.ajax({
+            type:"GET",
+            async:false,
+            url:updateProjectURL,
+            data:projMsg,
+            success:function(result){
+                if(result.resultCode == 1){
+                    alert("更新成功");
+                }else{
+                    alert("更新失败");
+                }
+            }
+        });
+        // 对未勾选的人进行删除
+        var deleteMsg = "projId="+projId;
+        for(let i=0;i<unCheckboxVal.length;i++){
+            deleteMsg = deleteMsg + "&empNo=" + unCheckboxVal[i];
+        }
+        $.ajax({
+            type:"GET",
+            url:deleteEmpForProjectURL,
+            data:deleteMsg
+        });
+    }
+</script>
+</html>
