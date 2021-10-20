@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pers.ljc.project.mapper.ProjectMapper">
+    <!-- 插入一个项目 -->
+    <insert id="insertProject" parameterType="project">
+        insert into t_project (projName,projVersion,projDesc,projCreated,projStatus) values (#{projName},#{projVersion},#{projDesc},#{projCreated},#{projStatus});
+    </insert>
+
+    <!-- 分页查询项目 -->
+    <select id="listProjectsByPage" resultType="project">
+        select * from t_project limit #{param1},#{param2};
+    </select>
+
+    <!-- 查询项目总数 -->
+    <select id="countProject" resultType="int">
+        select count(*) from t_project;
+    </select>
+
+    <!-- 根据项目id查询项目详情 -->
+    <select id="getProjectByProjId" resultType="project">
+        select * from t_project where projId=#{param1};
+    </select>
+
+    <!-- 根据项目id和员工no为项目添加参与员工 -->
+    <insert id="insertProjectEmpByProjId">
+        insert into t_project_emp values (#{param1},#{param2});
+    </insert>
+
+    <!-- 根据项目id更新项目信息 -->
+    <update id="updateProjectByProjId" parameterType="project">
+        update t_project
+        <set>
+            <if test="projName != null and projName != ''">
+                projName=#{projName},
+            </if>
+            <if test="projVersion != null and projVersion != ''">
+                projVersion=#{projVersion},
+            </if>
+            <if test="projDesc != null and projDesc != ''">
+                projDesc=#{projDesc},
+            </if>
+            <if test="projStatus != null">
+                projStatus=#{projStatus},
+            </if>
+        </set>
+            where projId=#{projId};
+    </update>
+
+    <!-- 删除项目的参与人员 -->
+    <delete id="deleteEmpForProject">
+        delete from t_project_emp where projId=#{param1} and empNo=#{param2};
+    </delete>
+
+    <!-- 根据projId删除项目 -->
+    <delete id="deleteProjectByProjId">
+        delete from t_project where projId=#{param1};
+    </delete>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pers.ljc.project.mapper.EmpMapper">
+    <!-- 插入员工 -->
+    <insert id="insertEmp" parameterType="emp">
+        insert into t_emp values (#{empNo},#{empName},#{empAge},#{empBirth},#{inductionTime},#{empTel},#{empStatus});
+    </insert>
+
+    <!-- 员工的分页查询 -->
+    <select id="listEmpsByPage" resultType="emp">
+        select * from t_emp limit #{param1},#{param2};
+    </select>
+
+    <!-- 根据项目id查询参与项目的所有员工 -->
+    <select id="listEmpsByProjId" resultType="emp" parameterType="int">
+        select * from t_emp emp,t_project_emp pm where emp.empNo=pm.empNo and projId=#{projId};
+    </select>
+
+    <!-- 查询员工总数 -->
+    <select id="countEmp" resultType="int">
+        select count(*) from t_emp;
+    </select>
+
+    <!-- 查询所有员工 -->
+    <select id="listEmps" resultType="emp">
+        select * from t_emp;
+    </select>
+
+    <!-- 根据empNo删除员工 -->
+    <delete id="deleteEmpByEmpNo">
+        delete from t_emp where empNo=#{empNo};
+    </delete>
+</mapper>
